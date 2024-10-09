@@ -4,6 +4,8 @@ import torchvision.transforms as transforms
 from PIL import Image
 import io
 from torch import nn
+import os
+
 # 加载模型
 class CNNnet(nn.Module):
     def __init__(self):
@@ -28,12 +30,15 @@ class CNNnet(nn.Module):
         x = self.model(x)
         return x
 
+# 确保 best_model.pth 文件在同一目录下
+model_path = os.path.join(os.path.dirname(__file__), 'best_model.pth')
 model = CNNnet()
-model.load_state_dict(torch.load('best_model.pth'))
+model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 model.eval()
 
 # 定义类别映射字典
 class_names = {0: 'airplane', 1: 'automobile', 2: 'bird', 3: 'cat', 4: 'deer', 5: 'dog', 6: 'frog', 7: 'horse', 8: 'ship', 9: 'truck'}
+
 # 图像预处理
 def transform_image(image_bytes):
     transform = transforms.Compose([
@@ -42,6 +47,8 @@ def transform_image(image_bytes):
     ])
     image = Image.open(io.BytesIO(image_bytes))
     return transform(image).unsqueeze(0)
+
+# Streamlit 应用
 st.title('Image Classification Web App')
 uploaded_file = st.file_uploader('Choose an image...', type='png')
 
